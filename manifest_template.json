@@ -1,13 +1,18 @@
 {
   "package": {
-	"name": "...",
-	"description": "...",
-	"version": "...",
-	"tags": ["..."],
-	"dependencies": {
-		"name": "version",
-	},
-	"inbuild_epls": ["..."],
-	"inbuild_evts": ["..."],
+	"name": "",
+	"description": "",
+	"version": "",
+	"tags": [],
+	"dependencies": [
+		{
+			"name": "lala",
+			"version": "*.*.*"
+		}
+	],
+		
+	"monitos": [],
+	"events": [],
+	"connectivityPlugins": [],
   },
 }
