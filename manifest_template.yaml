@@ -1,0 +1,9 @@
+package:
+  - name: "..."
+  - description: "..."
+  - version: "..."
+  - repository: "..."
+  - tags:
+    - "..."
+  - dependencies:
+      - "..." #package name
