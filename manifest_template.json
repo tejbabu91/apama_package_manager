@@ -6,8 +6,8 @@
 	"tags": ["..."],
 	"dependencies": {
 		"name": "version",
-	}
+	},
 	"inbuild_epls": ["..."],
 	"inbuild_evts": ["..."],
-  }
+  },
 }
