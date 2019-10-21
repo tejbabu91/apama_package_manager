@@ -11,7 +11,7 @@
 		}
 	],
 		
-	"monitos": [],
+	"monitors": [],
 	"events": [],
 	"connectivityPlugins": [],
   },
