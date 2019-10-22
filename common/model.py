@@ -31,7 +31,7 @@ class Version(object):
 @dataclass(frozen=True)
 class Dep(object):
 	name: str           # name of the dependent package
-	version: str        # version requirement of the dependent packages to use. A package can use specify wildcard.
+	version: str        # version requirement of the dependent packages to use. Can use wildcard.
 
 
 @dataclass(frozen=True)

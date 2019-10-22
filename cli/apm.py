@@ -1,5 +1,8 @@
 #! /usr/bin/env python
-import sys, os, getopt
+import sys, os, getopt, pathlib
+
+# add common python scripts to the path
+sys.path.append(os.fspath(pathlib.Path(__file__).parent.parent.joinpath('common')))
 
 def printUsage():
 	print ("apama_package_manager.py")
