@@ -70,7 +70,6 @@ def find_dependencies(name: str, version: Optional[str]) -> Dict[str, Version]:
 
 	# very basic for now - just pick the latest version of the dependencies
 	visited = {}
-	parent = {}
 	queue = collections.deque[name]
 	visited[name] = get_latest_version(name)
 
@@ -81,10 +80,6 @@ def find_dependencies(name: str, version: Optional[str]) -> Dict[str, Version]:
 			if dep.name not in visited:
 				visited[dep.name] = get_latest_version(dep.name)
 				queue.append(dep.name)
-				parent[dep.name] = pkg_name
-			else:
-				if parent[dep.name] != pkg_name:
-					raise Exception('cyclic dependency found')
 
 	return visited
 
