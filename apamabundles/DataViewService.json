@@ -1,0 +1,18 @@
+{
+  "package": {
+	"name": "DataViewService",
+	"description": "Enables Apama applications to expose data to Apama Dashboard Studio and custom ScenarioService clients, using the read-only DataView interface.",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [
+		{
+			"name": "ScenarioService",
+			"version": "1.0"
+		}
+	],
+		
+	"monitors": ["${APAMA_HOME}/monitors/DataViewService_Interface.mon","${APAMA_HOME}/monitors/DataViewService_Interface.mon"],
+	"events": [],
+	"connectivityPlugins": [],
+  },
+}

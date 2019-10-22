@@ -1,0 +1,18 @@
+{
+  "package": {
+	"name": "MemoryStore",
+	"description": "Required by all applications using the MemoryStore",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [
+		{
+			"name": "ScenarioService",
+			"version": "1.0"
+		}
+	],
+		
+	"monitors": ["${APAMA_HOME}/monitors/data_storage/MemoryStore.mon","${APAMA_HOME}/monitors/data_storage/MemoryStoreScenarioImpl.mon"],
+	"events": [],
+	"connectivityPlugins": [],
+  },
+}

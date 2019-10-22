@@ -1,0 +1,11 @@
+{
+  "package": {
+	"name": "ConnectivityPluginsCommon",
+	"description": "Support for controlling connectivity plug-ins from EPL",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [],
+	"monitors": ["${APAMA_HOME}/monitors/ConnectivityPluginsControl.mon","${APAMA_HOME}/monitors/ConnectivityPluginsControl.mon"],
+	"connectivityPlugins": [],
+  },
+}

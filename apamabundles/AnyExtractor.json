@@ -1,0 +1,11 @@
+{
+  "package": {
+	"name": "AnyExtractor",
+	"description": "Support for extracting values from the any type",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [],
+	"monitors": ["${APAMA_HOME}/monitors/AnyExtractor.mon"],
+	"connectivityPlugins": [],
+  },
+}

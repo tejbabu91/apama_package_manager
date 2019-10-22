@@ -1,0 +1,14 @@
+{
+  "package": {
+	"name": "EDA",
+	"description": "Support for Apama-EDA integration",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [
+		{
+		}
+	],
+	"monitors": ["${APAMA_HOME}/monitors/EDAUtils.mon"],
+	"connectivityPlugins": [],
+  },
+}

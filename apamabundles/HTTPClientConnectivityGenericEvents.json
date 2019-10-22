@@ -1,0 +1,12 @@
+{
+  "package": {
+	"name": "HTTPClientGenericEvents",
+	"description": "Predefined generic events for the HTTP client connectivity plug-in",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [],
+	"monitors": ["${APAMA_HOME}/monitors/HTTPClientEvents.mon"],
+	"events": [],
+	"connectivityPlugins": [],
+  },
+}

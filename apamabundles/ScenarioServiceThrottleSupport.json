@@ -1,0 +1,16 @@
+{
+  "package": {
+	"name": "ScenarioServiceThrottlingSupport",
+	"description": "Enables throttling support for scenario-based applications",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [
+		{
+			"name": "ScenarioService",
+			"version": "1.0"
+		}
+	],
+	"monitors": [],
+	"connectivityPlugins": ["${APAMA_HOME}/monitors/scenario_support/ScenarioServiceThrottlingPeriod.evt"],
+  },
+}

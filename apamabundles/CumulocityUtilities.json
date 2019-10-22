@@ -1,0 +1,36 @@
+{
+  "package": {
+	"name": "CumulocityUtilities",
+	"description": "Utilities useful for EPL code interacting with Cumulocity events",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [
+		{
+			"name": "CumulocityEventDefinitions",
+			"version": "1.0"
+		},
+		{
+			"name": "TimeFormat",
+			"version": "1.0"
+		},
+		{
+			"name": "ConnectivityPluginsCommon",
+			"version": "1.0"
+		},
+		{
+			"name": "Management",
+			"version": "1.0"
+		},
+		{
+			"name": "AnyExtractor",
+			"version": "1.0"
+		},
+		{
+			"name": "HTTPClientConnectivityGenericEvents",
+			"version": "1.0"
+		},
+	],
+	"monitors": ["${APAMA_HOME}/monitors/cumulocity/10.5/Cumulocity_Utils.mon"],
+	"connectivityPlugins": [],
+  },
+}

@@ -1,0 +1,12 @@
+{
+  "package": {
+	"name": "Management",
+	"description": "Support for accessing the Management interface of the correlator from within EPL",
+	"version": "1.0",
+	"tags": [],
+	"dependencies": [],
+	"monitors": ["${APAMA_HOME}/monitors/ManagementImpl.mon","${APAMA_HOME}/monitors/Management.mon"],
+	"events": [],
+	"connectivityPlugins": [],
+  },
+}
