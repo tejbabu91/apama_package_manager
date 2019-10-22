@@ -1,8 +1,10 @@
 from typing import *
 from dataclasses import dataclass, field
+from dataclasses_json import dataclass_json
 import re
 
 
+@dataclass_json
 @dataclass(order=True, frozen=True)
 class Version(object):
 	"""
@@ -28,12 +30,14 @@ class Version(object):
 
 
 
+@dataclass_json
 @dataclass(frozen=True)
 class Dep(object):
 	name: str           # name of the dependent package
 	version: str        # version requirement of the dependent packages to use. Can use wildcard.
 
 
+@dataclass_json
 @dataclass(frozen=True)
 class Package(object):
 	name: str           # unique name of the package
