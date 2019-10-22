@@ -5,11 +5,14 @@ import sys, os, getopt, pathlib
 sys.path.append(os.fspath(pathlib.Path(__file__).parent.parent.joinpath('common')))
 
 def printUsage():
-	print ("apama_package_manager.py")
+	print ("These are the common command used in various situations")
 	print ("")
-	print ("Options")
-	print ("")
-	print ("		--list			| list all the packages")
+	print ("		--list				|	List all the packages")
+	print ("		--install			|	Install given package")
+	print ("		--uninstall			|	Uninstall given packages")
+	print ("		--show				|	Show information about one or more installed packages")
+	print ("		--deploy			|	Deploy the application")
+	print ("		--publish			|	Publish this package to repository")
 
 def list_packages():
 	"""
