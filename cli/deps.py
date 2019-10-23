@@ -10,7 +10,7 @@ class BoundaryType(Enum):
 	INCLUSIVE = 1
 	EXCLUSIVE = 2
 
-@dataclass
+@dataclass(frozen=True)
 class Boundary(object):
 	major: int
 	minor: int
@@ -23,7 +23,7 @@ class Boundary(object):
 		return not self.is_inclusive()
 
 
-@dataclass(order=False)
+@dataclass(order=False, frozen=True)
 class VersionRange(object):
 	"""
 	Version requirement for a dependency.
@@ -33,7 +33,10 @@ class VersionRange(object):
 	end: Optional[Boundary]
 
 	@staticmethod
-	def from_str(orig_str: str):
+	def from_str(orig_str: Optional[str]):
+		if orig_str is None or orig_str == '':
+			return VersionRange(start=Boundary(0,0, BoundaryType.INCLUSIVE), end=None)
+
 		s = orig_str.strip()
 		def parse_num(n: str) -> Tuple[int, int]:
 			n = n.strip()
@@ -170,15 +173,15 @@ class VersionRange(object):
 
 
 # cache of package versions
-pkg_versions: Dict[str, List[Version]] = {}
+packages_version_cache: Dict[str, List[Version]] = {}
 
 # cache of package information
-pkg_info: Dict[str, Dict[Version, Package]] = {}
+packages_info_cache: Dict[str, Dict[Version, Package]] = {}
 
 
 def get_pkg_versions(name: str) -> List[Version]:
-	if name in pkg_versions:
-		return pkg_versions[name]
+	if name in packages_version_cache:
+		return packages_version_cache[name]
 
 	# TODO: else make HTTP call to the backend and cache the information
 	return []
@@ -191,9 +194,9 @@ def get_pkg_info(name: str, version: Optional[str] = None) -> Package:
 	if not version:
 		version =get_latest_version(name)
 
-	if name in pkg_info:
-		if version in pkg_info[name]:
-			return pkg_info[name][version]
+	if name in packages_info_cache:
+		if version in packages_info_cache[name]:
+			return packages_info_cache[name][version]
 
 	# TODO: make HTTP call to the backend and cache the information
 	return None
@@ -218,7 +221,7 @@ def find_dependencies_latest_version(name: str) -> Dict[str, Version]:
 				queue.append(dep.name)
 	return visited
 
-@dataclass
+@dataclass(frozen=True)
 class PackageRequirement(object):
 	name: str                   # name of the package
 	version_req: VersionRange   # version requirement
@@ -239,7 +242,7 @@ def find_dependencies(packages: List[Tuple[str, Optional[str]]]) -> Dict[str, Ve
 
 		## Pick one of the requirement for processing but don't update existing map for easier back tracking
 		open_requirements = open_requirements.copy()  # create copy
-		current_requirement: open_requirements.pop()
+		current_requirement = open_requirements.pop()
 		pkg_name = current_requirement.name
 
 		# get selected version if already selected previously else get all available versions and try each
@@ -269,7 +272,7 @@ def find_dependencies(packages: List[Tuple[str, Optional[str]]]) -> Dict[str, Ve
 
 	open_requirements: Set[PackageRequirement] = set()
 	for (name, version) in packages:
-		v = VersionRange.from_str(version if '[0.0,)' is None else version)     # any version is ok if none specified
+		v = VersionRange.from_str(version)     # any version is ok if none specified
 		open_requirements.add(PackageRequirement(name, v))
 
 	return rec_step({}, open_requirements)
@@ -335,8 +338,26 @@ def test_version_in_range():
 		assert inRange == _range.isInRange(ver)
 
 
+def test_dependency_resolution():
+	packages = {
+		'Leaf1': {
+			Version.from_str('1.0.0'): Package(name='Leaf1', description='', version='1.0.0'),
+			Version.from_str('1.0.1'): Package(name='Leaf1', description='', version='1.0.1'),
+			Version.from_str('1.1.0'): Package(name='Leaf1', description='', version='1.1.0'),
+		},
+		'Leaf2': {
+			Version.from_str('1.0.0'): Package(name='Leaf1', description='', version='1.0.0'),
+			Version.from_str('2.0.0'): Package(name='Leaf1', description='', version='2.0.0'),
+		}
+	}
+	packages_info_cache.update(packages)
+	print(packages_info_cache)
+	print(find_dependencies([('Leaf1', None)]))
+
+
 if __name__ == '__main__':
 	print('--- testing start ---')
 	test_version_range_parsing()
 	test_version_in_range()
+	# test_dependency_resolution()
 	print('--- testing done ---')
