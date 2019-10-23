@@ -6,7 +6,9 @@ from dataclasses import asdict
 
 from manager import Manager
 
-app = Flask(__name__)
+scriptDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+
+app = Flask(__name__, static_folder=os.path.abspath(os.path.join(scriptDir, '..', 'pkg-srv-ui', 'dist', 'pkg-srv-ui')))
 app.config.from_object('config.Config')
 
 @app.route('/packages', methods=['GET'])
@@ -37,5 +39,5 @@ def packages_name_version(name, version):
 if __name__ == '__main__':
     print(app.config)
     app.manager = Manager(app.config['PACKAGE_DIR'])
-    app.run()
+    app.run(host='0.0.0.0')
 

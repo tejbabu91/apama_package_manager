@@ -6,6 +6,6 @@
 	"tags": [],
 	"dependencies": [],
 	"monitors": ["${APAMA_HOME}/monitors/AnyExtractor.mon"],
-	"connectivityPlugins": [],
-  },
+	"connectivityPlugins": []
+  }
 }
