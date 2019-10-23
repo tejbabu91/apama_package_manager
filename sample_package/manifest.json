@@ -1,0 +1,16 @@
+{
+	"name": "test2",
+	"description": "test2 desc",
+	"version": "3.1.1",
+	"tags": ["hello"],
+	"dependencies": [
+		{
+			"name": "lala",
+			"version": "*.*.*"
+		}
+	],
+		
+	"monitors": ["assas"],
+	"events": ["asass"],
+	"connectivityPlugins": []
+}

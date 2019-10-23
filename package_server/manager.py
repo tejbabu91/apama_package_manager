@@ -92,11 +92,16 @@ class Manager:
             print('##### manifest', data)
             manifest = model.Package.from_json(data)
 
-        self.manifest_data.packages.append(manifest)
+        if self.get_package_manifest(manifest.name, manifest.version) is None:
+            self.manifest_data.packages.append(manifest)
+        else:
+            # remove old entry, add new one
+            self.manifest_data.packages.remove(self.get_package_manifest(manifest.name, manifest.version))
+            self.manifest_data.packages.append(manifest)
         self.write_manifest()
 
         package_dir = os.path.join(self.data_path, f'{manifest.name}', f'{manifest.version}')
-        os.makedirs(package_dir)
+        os.makedirs(package_dir, exist_ok=True)
         shutil.move(data_file_path, os.path.join(package_dir, 'package.zip'))
 
 

@@ -9,7 +9,8 @@ import { PackageManifest } from './models';
 })
 export class AppComponent implements OnInit {
   title = 'pkg-srv-ui';
-  packages: PackageManifest[];
+  packages: PackageManifest[] = [];
+  searchText = '';
 
   constructor(private pss: PackageServerService) {
   }
