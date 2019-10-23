@@ -1,7 +1,7 @@
 # dependencies management of Apama packages
 
 from common.model import *
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import re, collections
 from enum import Enum
 
@@ -20,7 +20,7 @@ class Boundary(object):
 		return self.type == BoundaryType.INCLUSIVE
 
 	def is_exclusive(self):
-		return self.type == BoundaryType.EXCLUSIVE
+		return not self.is_inclusive()
 
 
 @dataclass(order=False)
@@ -169,7 +169,6 @@ class VersionRange(object):
 		return res
 
 
-
 # cache of package versions
 pkg_versions: Dict[str, List[Version]] = {}
 
@@ -200,16 +199,12 @@ def get_pkg_info(name: str, version: Optional[str] = None) -> Package:
 	return None
 
 
-def find_dependencies(name: str, version: Optional[str]) -> Dict[str, Version]:
+def find_dependencies_latest_version(name: str) -> Dict[str, Version]:
 	"""
-	Find all dependencies of the provided package.
+	Find all dependencies of the provided package - just return the latest version of all dependencies
 	:param name: The package name whose dependencies need to be found.
-	:param version: The package version. Use latest if not specified. Currently ignored.
 	:return: Dependent package names along with the version to use. Includes the current package as well.
 	"""
-
-	# very basic for now - just pick the latest version of the dependencies
-
 	visited = {}
 	queue = collections.deque[name]
 	visited[name] = get_latest_version(name)
@@ -221,74 +216,127 @@ def find_dependencies(name: str, version: Optional[str]) -> Dict[str, Version]:
 			if dep.name not in visited:
 				visited[dep.name] = get_latest_version(dep.name)
 				queue.append(dep.name)
-
-
-
 	return visited
 
+@dataclass
+class PackageRequirement(object):
+	name: str                   # name of the package
+	version_req: VersionRange   # version requirement
 
-def get_dependencies(name: str, version: Optional[str]) -> Dict[str, Version]:
-	if not version:
-		version = get_latest_version(name)
-
-	selected_versions = {}
-	# selection of current set of versions of a package based on requirements
-	current_selection = {}
-
-	all_requirements = {}
-
-	# for a package
-
-
-
+class Conflict(Exception):
 	pass
 
+def find_dependencies(packages: List[Tuple[str, Optional[str]]]) -> Dict[str, Version]:
+	"""
+	Return all dependency packages from list of top level dependency requirements.
+	:param packages: List of (package name, version range)
+	:return: Dictionary of the all package name and the their version satisfying all package dependency requirements.
+	"""
+	# TODO: No cycle detection yet.
+	def rec_step(selected_versions: Dict[str, Version], open_requirements: Set[PackageRequirement]):
+		if not  open_requirements:  # if no more requirements then we are done
+			return selected_versions
+
+		## Pick one of the requirement for processing but don't update existing map for easier back tracking
+		open_requirements = open_requirements.copy()  # create copy
+		current_requirement: open_requirements.pop()
+		pkg_name = current_requirement.name
+
+		# get selected version if already selected previously else get all available versions and try each
+		available_versions =  [selected_versions[pkg_name]] if pkg_name in selected_versions else get_pkg_versions(pkg_name)
+
+		# filter only compatible versions
+		compatible_versions = sorted([v for v in available_versions if current_requirement.version_req.isInRange(v)])
+		compatible_versions.reverse()
+		for ver in compatible_versions:
+			try:
+				selected_versions = selected_versions.copy()
+				open_requirements = open_requirements.copy()
+
+				pkg_info = get_pkg_info(pkg_name, ver.to_str())
+				selected_versions[pkg_name] = ver
+
+				# add all dependencies of the selected package as open requirements
+				for dep in pkg_info.dependencies:
+					open_requirements.add(PackageRequirement(dep.name, VersionRange.from_str(dep.version)))
+				#
+				return rec_step(selected_versions, open_requirements)
+			except Conflict as ex:
+				pass    # try next version
+
+		raise Conflict(f'No compatible version for requirement {current_requirement}')
+
+
+	open_requirements: Set[PackageRequirement] = set()
+	for (name, version) in packages:
+		v = VersionRange.from_str(version if '[0.0,)' is None else version)     # any version is ok if none specified
+		open_requirements.add(PackageRequirement(name, v))
+
+	return rec_step({}, open_requirements)
 
 
 def test_version_range_parsing():
-	for s in [
-		'1.0',
+	for s, r in [
+		('1.0', '[1.0,)'),
 
-		'[1.0]',
+		('[1.0]', '[1.0,1.0]'),
 
-		'[1.0,]',
-		'[1.0,)',
-		'[,1.0]',
-		'[,1.0)',
+		('[1.0,]', '[1.0,)'),
+	    ('[1.0,)', '[1.0,)'),
+	    ('[,1.0]', '(,1.0]'),
+	    ('[,1.0)', '(,1.0)'),
 
-		'(1.0,)',
-		'(1.0,]',
-		'(,1.0)',
-		'(,1.0]',
+        ('(1.0,)', '(1.0,)'),
+        ('(1.0,]', '(1.0,)'),
+        ('(,1.0)', '(,1.0)'),
+        ('(,1.0]', '(,1.0]'),
 
-		'[1.0,2.0]',
-		'(1.0,2.0)',
-		'(1.0,2.0]',
-		'[1.0,2.0)',
+        ('[1.0,2.0]', '[1.0,2.0]'),
+        ('(1.0,2.0)', '(1.0,2.0)'),
+        ('(1.0,2.0]', '(1.0,2.0]'),
+        ('[1.0,2.0)', '[1.0,2.0)'),
 
 		# invalid
-		'(1.0)',
-		'(1.0',
-		'[1.0)',
-		'[1.0,2.3,4.5]',
+        ('(1.0)', None),
+        ('(1.0', None),
+        ('[1.0)', None),
+        ('[1.0,2.3,4.5]', None),
 	]:
 		result = ''
 		try:
 			v = VersionRange.from_str(s)
 			result = str(v)
 		except Exception as ex:
-			result = str(ex)
-		print(f'{s}:    {result}')
+			result = None
 
-	v = VersionRange.from_str('[1.0,2.0)')
-	print(v.isInRange(Version.from_str('1.0.0')))
-	print(v.isInRange(Version.from_str('2.0.0')))
-	print(v.isInRange(Version.from_str('1.1.0')))
-	print(v.isInRange(Version.from_str('1.9.0')))
-	print(v.isInRange(Version.from_str('2.1.0')))
-	v = VersionRange.from_str('[1.0,)')
-	print(v.isInRange(Version.from_str('2.0.0')))
+		if r is None:
+			assert result is None
+		else:
+			assert result == r
+
+def test_version_in_range():
+	cases = [
+		('[1.0,2.0)', '1.0.0', True),
+		('[1.0,2.0)', '1.0.1', True),
+		('[1.0,2.0)', '1.9.0', True),
+		('[1.0,2.0)', '1.9.9', True),
+		('[1.0,2.0)', '2.0.0', False),
+		('[1.0,2.0)', '2.0.1', False),
+		('[1.0,2.0)', '0.9.9', False),
+		('[1.0,2.0)', '9.9.9', False),
+		('[1.0,)', '1.0.1', True),
+		('[1.0,)', '11.0.1', True),
+		('[1.0,)', '0.9.9', False),
+	]
+
+	for (r, v, inRange) in cases:
+		_range = VersionRange.from_str(r)
+		ver = Version.from_str(v)
+		assert inRange == _range.isInRange(ver)
 
 
 if __name__ == '__main__':
+	print('--- testing start ---')
 	test_version_range_parsing()
+	test_version_in_range()
+	print('--- testing done ---')
