@@ -6,9 +6,22 @@ import re, collections
 from enum import Enum
 
 
-class Boundary(Enum):
+class BoundaryType(Enum):
 	INCLUSIVE = 1
 	EXCLUSIVE = 2
+
+@dataclass
+class Boundary(object):
+	major: int
+	minor: int
+	type: BoundaryType
+
+	def is_inclusive(self):
+		return self.type == BoundaryType.INCLUSIVE
+
+	def is_exclusive(self):
+		return self.type == BoundaryType.EXCLUSIVE
+
 
 @dataclass(order=False)
 class VersionRange(object):
@@ -16,8 +29,8 @@ class VersionRange(object):
 	Version requirement for a dependency.
 	"""
 
-	start: Optional[Tuple[int, int, Boundary]]
-	end: Optional[Tuple[int, int, Boundary]]
+	start: Optional[Boundary]
+	end: Optional[Boundary]
 
 	@staticmethod
 	def from_str(orig_str: str):
@@ -37,17 +50,17 @@ class VersionRange(object):
 		start_boundary = None
 		end_boundary = None
 		if s.startswith('['):
-			start_boundary = Boundary.INCLUSIVE
+			start_boundary = BoundaryType.INCLUSIVE
 			s = s[1:]
 		elif s.startswith('('):
-			start_boundary = Boundary.EXCLUSIVE
+			start_boundary = BoundaryType.EXCLUSIVE
 			s = s[1:]
 
 		if s.endswith(']'):
-			end_boundary = Boundary.INCLUSIVE
+			end_boundary = BoundaryType.INCLUSIVE
 			s = s[:-1]
 		elif s.endswith(')'):
-			end_boundary = Boundary.EXCLUSIVE
+			end_boundary = BoundaryType.EXCLUSIVE
 			s = s[:-1]
 		if start_boundary or end_boundary:
 			# either both are provide or none is provided
@@ -66,16 +79,16 @@ class VersionRange(object):
 			if len(ranges) == 1:
 				nums = parse_num(ranges[0])
 				# range is >= num
-				start = (nums[0], nums[1], Boundary.INCLUSIVE)
+				start = Boundary(nums[0], nums[1], BoundaryType.INCLUSIVE)
 				end = None
 			else:
 				raise Exception(f'Invalid range specified: {orig_str}; Use [, ], ( and ) to in close range.')
 		else:
 			# both boundary specified
 			if len(ranges) == 1:
-				if start_boundary == Boundary.INCLUSIVE and end_boundary == Boundary.INCLUSIVE:
+				if start_boundary == BoundaryType.INCLUSIVE and end_boundary == BoundaryType.INCLUSIVE:
 					nums = parse_num(ranges[0])
-					start = (nums[0], nums[1], Boundary.INCLUSIVE)
+					start = Boundary(nums[0], nums[1], BoundaryType.INCLUSIVE)
 					end = start
 				else:
 					raise Exception(f'Only [major.minor] format is allowed without specifying start and end: {orig_str}')
@@ -86,13 +99,13 @@ class VersionRange(object):
 					raise Exception(f'Both start and end range cannot be empty, specify at least one: {orig_str}')
 				if start_str:
 					nums = parse_num(start_str)
-					start = (nums[0], nums[1], start_boundary)
+					start = Boundary(nums[0], nums[1], start_boundary)
 				else:
 					start = None
 
 				if end_str:
 					nums = parse_num(end_str)
-					end = (nums[0], nums[1], end_boundary)
+					end = Boundary(nums[0], nums[1], end_boundary)
 				else:
 					end = None
 
@@ -100,22 +113,53 @@ class VersionRange(object):
 		return VersionRange(start=start, end=end)
 
 
+	def isInRange(self, version: Version) -> bool:
+		"""
+		Check if a concrete version is in range of the specified version range.
+		:param version: The concrete version
+		:return: True is specified version satisfies the version range otherwise False.
+		"""
+
+		if self.start:
+			# the version should be greater than or equal to depending on the boundary
+			if self.start.is_inclusive():
+				if version.major < self.start.major: return False
+				elif version.major == self.start.major:
+					if version.minor < self.start.minor: return False
+			else:
+				if version.major < self.start.major: return False
+				elif version.major == self.start.major:
+					if version.minor <= self.start.minor: return False
+
+		if self.end:
+			if self.end.is_inclusive():
+				if version.major > self.end.major: return False
+				elif version.major == self.end.major:
+					if version.minor > self.end.minor: return False
+			else:
+				if version.major > self.end.major: return False
+				elif version.major == self.end.major:
+					if version.minor >= self.end.minor: return False
+
+		return True
+
+
 	def __repr__(self):
 		res = ''
 		if self.start:
-			if self.start[2] == Boundary.INCLUSIVE:
+			if self.start.type == BoundaryType.INCLUSIVE:
 				res = '['
 			else:
 				res = '('
 
-			res = f'{res}{self.start[0]}.{self.start[1]},'
+			res = f'{res}{self.start.major}.{self.start.minor},'
 		else:
 			res = '(,'
 
 		if self.end:
-			res = f'{res}{self.end[0]}.{self.end[1]}'
+			res = f'{res}{self.end.major}.{self.end.minor}'
 
-			if self.end[2] == Boundary.INCLUSIVE:
+			if self.end.type == BoundaryType.INCLUSIVE:
 				res = f'{res}]'
 			else:
 				res = f'{res})'
@@ -183,6 +227,23 @@ def find_dependencies(name: str, version: Optional[str]) -> Dict[str, Version]:
 	return visited
 
 
+def get_dependencies(name: str, version: Optional[str]) -> Dict[str, Version]:
+	if not version:
+		version = get_latest_version(name)
+
+	selected_versions = {}
+	# selection of current set of versions of a package based on requirements
+	current_selection = {}
+
+	all_requirements = {}
+
+	# for a package
+
+
+
+	pass
+
+
 
 def test_version_range_parsing():
 	for s in [
@@ -218,6 +279,16 @@ def test_version_range_parsing():
 		except Exception as ex:
 			result = str(ex)
 		print(f'{s}:    {result}')
+
+	v = VersionRange.from_str('[1.0,2.0)')
+	print(v.isInRange(Version.from_str('1.0.0')))
+	print(v.isInRange(Version.from_str('2.0.0')))
+	print(v.isInRange(Version.from_str('1.1.0')))
+	print(v.isInRange(Version.from_str('1.9.0')))
+	print(v.isInRange(Version.from_str('2.1.0')))
+	v = VersionRange.from_str('[1.0,)')
+	print(v.isInRange(Version.from_str('2.0.0')))
+
 
 if __name__ == '__main__':
 	test_version_range_parsing()
