@@ -1,0 +1,13 @@
+package com.simple;
+
+monitor SimpleService {
+
+    action onload {
+
+        on all Request() as req {
+            log "Received Request " + req.toString() at INFO;
+            route Response(req.requestId, "SUCCESS", req.requestBody);
+        }
+
+    }
+}

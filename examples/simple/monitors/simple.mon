@@ -1,0 +1,9 @@
+package com.simple;
+
+monitor SimpleMonitor {
+
+    action onload {
+        log "This is a simple monitor" at INFO;
+    }
+
+}

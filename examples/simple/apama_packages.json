@@ -1,0 +1,7 @@
+{
+    "name": "simple",
+    "description": "This is a simple package",
+    "version": "1.0.0",
+    "tags": [],
+    "dependencies": []
+  }

@@ -1,0 +1,7 @@
+{
+    "name": "simple_request_response",
+    "description": "This is a simple request response package",
+    "version": "1.0.0",
+    "tags": [],
+    "dependencies": []
+  }

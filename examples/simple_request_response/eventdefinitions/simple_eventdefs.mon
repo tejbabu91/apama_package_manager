@@ -1,0 +1,13 @@
+package com.simple;
+
+event Request {
+    string requestId;
+    string requestType;
+    any requestBody;
+}
+
+event Response {
+    string requestId;
+    string responseStatus;
+    any responseBody;
+}

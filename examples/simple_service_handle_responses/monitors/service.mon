@@ -1,0 +1,12 @@
+package com.simple;
+
+monitor SimpleService_ResponseHandler {
+
+    action onload {
+
+        on all Response() as resp {
+            log "Received Response " + resp.toString() at INFO;
+        }
+
+    }
+}

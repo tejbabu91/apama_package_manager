@@ -1,0 +1,12 @@
+{
+    "name": "simple_service_handle_responses",
+    "description": "This is a simple service to handle responses",
+    "version": "1.0.0",
+    "tags": [],
+    "dependencies": [
+      {
+        "name" : "simple_service",
+        "version": "1.0.0"
+      }
+    ]
+  }
