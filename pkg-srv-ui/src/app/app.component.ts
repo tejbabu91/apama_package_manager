@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PackageServerService } from './package-server.service';
-import {PackageManifest} from './models';
+import { PackageManifest } from './models';
 
 @Component({
   selector: 'app-root',
