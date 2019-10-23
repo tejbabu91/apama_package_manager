@@ -19,10 +19,11 @@ def packages():
 @app.route('/packages', methods=['POST'])
 def packages_post():
     (tmpfd, tmpfilepath) = tempfile.mkstemp()
-    #tmpfilepath = os.path.join(app.config['PACKAGE_DIR'], f'p_tmp.zip')
+    os.close(tmpfd)
     try:
-        tmpfd.write(request.stream.read())
-        tmpfd.close()
+        with open(tmpfilepath, 'wb') as tmpfd:
+            tmpfd.write(request.stream.read())
+            tmpfd.close()
 
         app.manager.add_package(tmpfilepath)
         return Response(status=200)
