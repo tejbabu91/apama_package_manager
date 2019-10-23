@@ -55,11 +55,10 @@ class Manager:
         :param version:
         :return:
         """
-        for p in self.get_package_manifests_by_name(name):
-            if p.version == version:
+        for p in self.manifest_data.packages:
+            if p.name == name and p.version == version:
                 return p
         return None
-
 
     def get_manifest_json(self):
         """
@@ -76,32 +75,25 @@ class Manager:
         :param name:
         :return:
         """
-
-        m = []
-
-        for p in self.manifest_data.packages:
-            if p.name == name:
-                m.append(p)
-        return m
+        return [x for x in self.manifest_data.packages if x.name == name]
 
     def add_package(self, data_file_path):
         with zipfile.ZipFile(data_file_path, 'r') as z:
             m = z.extract(self.MANIFEST_NAME)
             with open(m, 'r') as f:
                 data = f.read()
-            print('##### manifest', data)
             manifest = model.Package.from_json(data)
 
-        if self.get_package_manifest(manifest.name, manifest.version) is None:
-            self.manifest_data.packages.append(manifest)
-        else:
-            # remove old entry, add new one
-            self.manifest_data.packages.remove(self.get_package_manifest(manifest.name, manifest.version))
-            self.manifest_data.packages.append(manifest)
+        for (i, p) in enumerate(self.manifest_data.packages):
+            if p.name == manifest.name and p.version == manifest.version:
+                del self.manifest_data.packages[i]
+
+        self.manifest_data.packages.append(manifest)
         self.write_manifest()
 
         package_dir = os.path.join(self.data_path, f'{manifest.name}', f'{manifest.version}')
         os.makedirs(package_dir, exist_ok=True)
+        if os.path.exists(os.path.join(package_dir, 'package.zip')): os.remove(os.path.join(package_dir, 'package.zip'))
         shutil.move(data_file_path, os.path.join(package_dir, 'package.zip'))
 
 

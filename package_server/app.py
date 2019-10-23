@@ -2,6 +2,7 @@ from flask import Flask, request, send_file, Response
 import os
 import io
 import json
+import tempfile
 from dataclasses import asdict
 
 from manager import Manager
@@ -17,12 +18,17 @@ def packages():
 
 @app.route('/packages', methods=['POST'])
 def packages_post():
-    tmpfilepath = os.path.join(app.config['PACKAGE_DIR'], f'p_tmp.zip')
-    with open(tmpfilepath, 'wb') as f:
-        f.write(request.stream.read())
+    (tmpfd, tmpfilepath) = tempfile.mkstemp()
+    #tmpfilepath = os.path.join(app.config['PACKAGE_DIR'], f'p_tmp.zip')
+    try:
+        tmpfd.write(request.stream.read())
+        tmpfd.close()
 
-    app.manager.add_package(tmpfilepath)
-    return Response(status=200)
+        app.manager.add_package(tmpfilepath)
+        return Response(status=200)
+    finally:
+        if os.path.exists(tmpfilepath):
+            os.remove(tmpfilepath)
 
 @app.route('/packages/<name>', methods=['GET'])
 def packages_name(name):

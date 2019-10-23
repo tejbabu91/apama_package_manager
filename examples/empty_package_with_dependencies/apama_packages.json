@@ -1,0 +1,12 @@
+{
+    "name": "empty_package_with_dependencies",
+    "description": "This is an empty package with dependencies",
+    "version": "1.0.0",
+    "tags": [],
+    "dependencies": [
+      {
+        "name": "empty_package",
+        "version": "2.0.0"
+      }
+    ]
+  }

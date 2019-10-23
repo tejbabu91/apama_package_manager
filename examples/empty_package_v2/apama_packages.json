@@ -1,0 +1,7 @@
+{
+    "name": "empty_package",
+    "description": "This is an empty package with no dependencies - version 2",
+    "version": "2.0.0",
+    "tags": [],
+    "dependencies": []
+  }
