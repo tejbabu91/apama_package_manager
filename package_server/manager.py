@@ -13,12 +13,12 @@ class Manifest:
     """
     Class representing metadata of repository
     """
-
     packages: List[model.Package] = field(default_factory=lambda: [])
 
 class Manager:
+    MANIFEST_NAME = 'apama_packages.json'
     def __init__(self, package_dir):
-        self.manifest_path = os.path.join(package_dir, 'manifest.json')
+        self.manifest_path = os.path.join(package_dir, self.MANIFEST_NAME)
         self.data_path = os.path.join(package_dir, 'data')
         os.makedirs(os.path.dirname(self.manifest_path), exist_ok=True)
         if os.path.isfile(self.manifest_path):
@@ -86,7 +86,7 @@ class Manager:
 
     def add_package(self, data_file_path):
         with zipfile.ZipFile(data_file_path, 'r') as z:
-            m = z.extract('manifest.json')
+            m = z.extract(self.MANIFEST_NAME)
             with open(m, 'r') as f:
                 data = f.read()
             print('##### manifest', data)
