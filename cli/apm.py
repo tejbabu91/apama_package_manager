@@ -1,100 +1,42 @@
 #! /usr/bin/env python
-import sys, os, getopt, pathlib, urllib.request, json
+import sys, os, getopt, pathlib, urllib.request, json, argparse
+import list, show, install, uninstall, publish, deploy
 
 # add common python scripts to the path
 sys.path.append(os.fspath(pathlib.Path(__file__).parent.parent.joinpath('common')))
 
-def printUsage():
-	print ("These are the common command used in various situations")
-	print ("")
-	print ("		--list				|	List all the packages")
-	print ("		--install			|	Install given package")
-	print ("		--uninstall			|	Uninstall given packages")
-	print ("		--show				|	Show information about one or more installed packages")
-	print ("		--deploy			|	Deploy the application")
-	print ("		--publish			|	Publish this package to repository")
+class Command(object):
+	def __init__(self, name, help, required=True,  args_provider=None, runner=None):
+		self.name = name
+		self.help = help
+		self.required = required
+		self.args_provider = args_provider
+		self.runner = runner
 
-def list_packages():
-	"""
-	list of packages
-	"""
-	print ("")
-	print ("showing list of packages:")
-	print ("")
-	contents = urllib.request.urlopen("http://127.0.0.1:5000/packages")
-	encoding = contents.info().get_content_charset('utf-8')
-	manifests = json.loads(contents.read().decode(encoding))
-	manifest_list = manifests["packages"]
-	for elem in manifest_list:
-		print(elem["name"] + "==" + elem["version"] if "version" in elem  else "")
-		if "dependencies" in elem:
-			for deps in elem["dependencies"]:
-				print(deps["name"] + "==" + deps["version"] if "version" in deps  else "")
-
-def install(package):
-	"""
-	packages can be a string or list of strings
-	"""
-	print("installs the mentioned packages.")
-
-def uninstall(package):
-	"""
-	packages can be a string or list of strings
-	"""
-	print("uninstall the mentioned packages.")
-
-def show(package):
-	"""
-	packages can be a string or list of strings
-	"""
-	print("show information of one or more mentioned packages.")
+def main():
+	commands = [
+			Command('list', 'List all the packages', True, None, list.run),
+	        Command('show', 'Show information about one or more installed packages', True, None, show.run),
+	        Command('install', 'Install given package', True, install.add_arguments, install.run),
+	        Command('uninstall', 'Uninstall given packages', True, uninstall.add_arguments, uninstall.run),
+			Command('publish', 'Publish this package to repository', True, None, publish.run),
+			Command('deploy', 'Deploy the application', True, deploy.add_arguments, deploy.run)
+	       ]
+	mainparser = argparse.ArgumentParser(description='Apama Package Manager Command Line Tool')
+	cmd_parser = mainparser.add_subparsers(title='commands', dest='command')
+	cmd_parser.required = True
 	
-def deploy():
-	"""
-	deploy
-	"""
-	print("deploy")
+	cmd_map = {} # runners map for dispatching the call
+	for c in commands:
+		argsp = cmd_parser.add_parser(c.name, help=c.help)
+		if c.args_provider:
+			c.args_provider(argsp)
+		cmd_map[c.name] = c.runner
 
-def publish():
-	"""
-	publish
-	"""
-	print("publish")	
-
-def main(args):
-	optionString = "hli:u:s:dp"
-	optionList = ["help", "list", "install=", "uninstall=", "show=", "deploy", "publish"]
-	
-	try:
-		optionlist, arguments = getopt.getopt(args, optionString, optionList)
-		if arguments: raise Exception(str(arguments))
-	except:
-		print ("Error parsing command line arguments: %s" % (sys.exc_info()[1]))
-		return 1
-	
-	for option, value in optionlist:
-			if option in ["-h", "--help"]:
-				printUsage()
-				return 0
-			elif option in ["-l", "--list"]:
-				list_packages()
-				return 0
-			elif option in ["-i", "--install"]:
-				install(value)
-				return 0
-			elif option in ["-u", "--uninstall"]:
-				uninstall(value)
-				return 0
-			
-			elif option in ["-s", "--show"]:
-				show(value)
-				return 0
-			elif option in ["-d", "--deploy"]:
-				deploy(value)
-				return 0
-			elif option in ["-d", "--publish"]:
-				publish(value)
-				return 0
+	args = mainparser.parse_args(sys.argv[1:])
+	runner = cmd_map[args.command]
+	runner(args)
 
 if __name__=="__main__":
-	sys.exit(main(sys.argv[1:]))
+	main()
+	
