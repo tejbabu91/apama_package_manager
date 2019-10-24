@@ -1,20 +1,39 @@
 import os
 import zipfile
-import urllib.request
 import http.client
+import hashlib
 
-def zipdir(path, ziph):
+def generate_md5_hash_for_all_files(file_paths):
+	file_to_md5 = dict()
+	for file in file_paths:
+		with open(file, "rb") as f:
+			file_to_md5[file] = hashlib.md5(f.read()).hexdigest()
+	with open('files_md5.txt', 'w') as f:
+		for k, v in file_to_md5.items():
+			f.write(str(k)+' --> '+(v)+'\n')
+
+	file_paths.append('files_md5.txt')
+def get_all_file_paths(path):
+	file_paths = []
 	for root, dirs, files in os.walk(path):
+		if 'apama_packages' in dirs:
+			dirs.remove('apama_packages')
 		for file in files:
-			ziph.write(os.path.join(root, file))
-			
+			filepath = os.path.join(root, file)
+			file_paths.append(filepath)
+	return file_paths
+
 def run(args=None):
 	"""
 	"""
-	name = vars(args)["package"]
-	zipf = zipfile.ZipFile(name+".zip", 'w', zipfile.ZIP_DEFLATED)
-	zipdir('./', zipf)
-	zipf.close()
+	name = args.package_name
+	file_paths = get_all_file_paths('./')
+	generate_md5_hash_for_all_files(file_paths)
+
+	with zipfile.ZipFile(name+'.zip', 'w') as zip:
+		for file in file_paths:
+			zip.write(file)
+	'''
 	content = open(name+".zip", 'rb').read()
 	
 	headers = {"Content-type": "application/octet-stream"}
@@ -24,8 +43,8 @@ def run(args=None):
 	resp = conn.getresponse()
 	if resp.status == 200:
 		print('package published successfully')
-
+	'''
 def add_arguments(parser):
 	"""
 	"""
-	parser.add_argument(dest="publish")
+	parser.add_argument(dest="package_name")
