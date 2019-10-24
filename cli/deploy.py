@@ -1,61 +1,22 @@
-from _elementtree import SubElement
-from xml.etree import ElementTree
-from xml.dom import minidom
-from xml.etree.ElementTree import Element, SubElement, Comment
-import json, os
+import subprocess, os, shutil, sys
 
 def run(args=None):
 	"""
 	"""
-	pass
-		
-def prettify(elem):
-	"""Return a pretty-printed XML string for the Element.
-	"""
-	rough_string = ElementTree.tostring(elem, 'utf-8')
-	reparsed = minidom.parseString(rough_string)
-	return reparsed.toprettyxml(indent="  ")
+	deployDir = os.path.abspath(args.deployDir)
+	if os.path.exists(deployDir): shutil.rmtree(deployDir)
 
-def createDeploy(fileList):
-	top = Element('configuration')
-	intAttribute = SubElement(top, 'intAttribute')
-	intAttribute.set('key', 'com.apama.text.CONFIG_VERSION')
-	intAttribute.set('value', '3')
-	listAttribute = SubElement(top, 'listAttribute')
-	listAttribute.set('key', 'com.apama.text.COMPONENTS')
-	listEntry = SubElement(listAttribute, 'listEntry')
-	component = SubElement(listEntry, 'component')
-	component.set('port', '15903')
-	component.set('type', 'CORRELATOR')
 
-	for runtimeEntry in fileList:
-		runtimeDependencyEntry = SubElement(component, 'runtimeDependencyEntry')
-		runtimeDependencyEntry.set('enabled', 'true')
-		runtimeDependencyEntry.set('path', runtimeEntry)
-		runtimeDependencyEntry.set('type', 'PROJECT_BUNDLE_MON_FILE')
-
-	return prettify(top)
-
-def createFileList(packageList):
-	fileList = []
-	for package in packageList:
-		with open('package') as json_file:
-			packageDate = json.load(json_file)
-			# assumning that the package json file has a list of monitor files.
-			fileList.append(packageList['monitors'])
-	return fileList
-
-def packageList():
-	path = 'C:\\dev\\GitHub\\apama_package_manager\\examples'
-	packageList = []
-	# r=root, d=directories, f = files
-	for r, d, f in os.walk(path):
-		for file in f:
-			if 'apama_packages.json' in file:
-				packageList.append(os.path.join(r, file))
-	return packageList
+	# Create a .dependencies file - required by engine_deploy
+	try:
+		with open('.dependencies', 'w') as fp:
+			fp.write('<?xml version="1.0" encoding="UTF-8"?>\n<apama-project/>\n')
+		subprocess.call(['engine_deploy' + ('.exe' if sys.platform in ['win32', 'cygwin'] else ''), '--exclude', '**/apama_packages.json', '-d', deployDir, '.'])
+	finally:
+		if os.path.exists('.dependencies'):
+			os.remove('.dependencies')
 
 def add_arguments(parser):
 	"""
 	"""
-	pass
+	parser.add_argument(dest="deployDir")

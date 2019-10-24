@@ -40,7 +40,3 @@ def run(args=None):
 
 	os.remove('checksums.txt')
 	os.remove(name)
-
-if __name__ == "__main__":
-	#get_all_files()
-	print(get_all_files())

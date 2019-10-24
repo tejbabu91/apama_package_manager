@@ -35,7 +35,7 @@ def get_all_packages_with_name(name: str) -> List[Package]:
         versions = list(packages_info_cache[name].values())
         return sort_pkg_by_versions(versions)
 
-    req = urllib.request.Request(url=PACKAGES_PATH + '/' + name, method='GET')
+    req = urllib.request.Request(url=PACKAGES_PATH + '/' + urllib.parse.quote(name), method='GET')
     resp = urllib.request.urlopen(req)
 
     if resp.status == 404:
@@ -78,7 +78,7 @@ def get_pkg_info(name: str, version: Optional[Union[str, Version]] = None) -> Pa
     return versions[version]
 
 def download_packages_with_name_and_version(name, version, targetPath):
-    urllib.request.urlretrieve(PACKAGES_PATH + '/' + name + '/' + version, filename=targetPath)
+    urllib.request.urlretrieve(PACKAGES_PATH + '/' + urllib.parse.quote(name) + '/' + version, filename=targetPath)
 
 def upload_package(filePath):
     data = None
