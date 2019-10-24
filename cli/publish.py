@@ -13,6 +13,7 @@ def generate_md5_hash_for_all_files(file_paths):
 			f.write(str(k)+' --> '+(v)+'\n')
 
 	file_paths.append('files_md5.txt')
+
 def get_all_file_paths(path):
 	file_paths = []
 	for root, dirs, files in os.walk(path):
@@ -33,7 +34,7 @@ def run(args=None):
 	with zipfile.ZipFile(name+'.zip', 'w') as zip:
 		for file in file_paths:
 			zip.write(file)
-	'''
+
 	content = open(name+".zip", 'rb').read()
 	
 	headers = {"Content-type": "application/octet-stream"}
@@ -43,7 +44,7 @@ def run(args=None):
 	resp = conn.getresponse()
 	if resp.status == 200:
 		print('package published successfully')
-	'''
+
 def add_arguments(parser):
 	"""
 	"""
