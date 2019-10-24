@@ -26,7 +26,7 @@ def get_all_packages():
     # cache the result for later package specific calls
     for p in result:
         versions = packages_info_cache.setdefault(p.name, dict())
-        versions[Version.from_str(p.version)] = p
+        versions[p.version] = p
 
     return result
 
