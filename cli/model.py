@@ -52,7 +52,6 @@ class Package(object):
 		if isinstance(self.version, str):
 			raise Exception('Pass Version object instead of version string')
 
-
 	@staticmethod
 	def from_dict(dict: Dict[str, Any]):
 		if 'dependencies' in dict:

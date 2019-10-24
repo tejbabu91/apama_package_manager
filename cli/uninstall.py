@@ -3,7 +3,6 @@ import json
 from deps import find_dependencies
 from install import runInstall
 
-
 def run(args=None):
     """
     """
@@ -41,7 +40,6 @@ def run(args=None):
         json.dump(packageData, json_file, indent=2)
 
     runInstall(resolvedPackages)
-
 
 def add_arguments(parser):
     """
