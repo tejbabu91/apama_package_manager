@@ -28,9 +28,8 @@ class VersionRange(object):
 	"""
 	Version requirement for a dependency.
 	"""
-
-	start: Optional[Boundary]
-	end: Optional[Boundary]
+	start: Optional[Boundary]   # None means no start
+	end: Optional[Boundary]     # None means no end
 
 	@staticmethod
 	def from_str(orig_str: Optional[str]):
@@ -44,8 +43,6 @@ class VersionRange(object):
 			if not matches:
 				raise Exception(f'Invalid version string: {n}')
 			nums = matches.groups()
-			if len(nums) >= 3 and nums[2] is not None:
-				print(f'Ignoring patch version part while parsing version number: {n}')
 			return int(nums[0]), int(nums[1])
 
 		start = None
@@ -148,40 +145,27 @@ class VersionRange(object):
 
 
 	def __repr__(self):
-		res = ''
 		if self.start:
-			if self.start.type == BoundaryType.INCLUSIVE:
-				res = '['
-			else:
-				res = '('
-
-			res = f'{res}{self.start.major}.{self.start.minor},'
+			res = f'{"[" if self.start.is_inclusive() else "("}{self.start.major}.{self.start.minor}'
 		else:
-			res = '(,'
-
+			res = '('
+		res = res + ','
 		if self.end:
-			res = f'{res}{self.end.major}.{self.end.minor}'
-
-			if self.end.type == BoundaryType.INCLUSIVE:
-				res = f'{res}]'
-			else:
-				res = f'{res})'
+			res = f'{res}{self.end.major}.{self.end.minor}{"]" if self.end.is_inclusive() else ")"}'
 		else:
 			res = f'{res})'
 
 		return res
 
 
-# cache of package versions
-packages_version_cache: Dict[str, List[Version]] = {}
-
 # cache of package information
 packages_info_cache: Dict[str, Dict[Version, Package]] = {}
 
 
 def get_pkg_versions(name: str) -> List[Version]:
-	if name in packages_version_cache:
-		return packages_version_cache[name]
+	if name in packages_info_cache:
+		versions = packages_info_cache[name]
+		return list(versions.keys())
 
 	# TODO: else make HTTP call to the backend and cache the information
 	return []
@@ -192,8 +176,8 @@ def get_latest_version(name: str) -> Version:
 
 def get_pkg_info(name: str, version: Optional[str] = None) -> Package:
 	if not version:
-		version =get_latest_version(name)
-
+		version = get_latest_version(name)
+	version = Version.from_str(version)
 	if name in packages_info_cache:
 		if version in packages_info_cache[name]:
 			return packages_info_cache[name][version]
@@ -346,12 +330,33 @@ def test_dependency_resolution():
 			Version.from_str('1.1.0'): Package(name='Leaf1', description='', version='1.1.0'),
 		},
 		'Leaf2': {
-			Version.from_str('1.0.0'): Package(name='Leaf1', description='', version='1.0.0'),
-			Version.from_str('2.0.0'): Package(name='Leaf1', description='', version='2.0.0'),
+			Version.from_str('1.0.0'): Package(name='Leaf2', description='', version='1.0.0'),
+			Version.from_str('2.0.0'): Package(name='Leaf2', description='', version='2.0.0'),
+			Version.from_str('2.1.0'): Package(name='Leaf2', description='', version='2.1.0'),
+			Version.from_str('3.0.5'): Package(name='Leaf2', description='', version='3.0.5'),
 		}
 	}
 	packages_info_cache.update(packages)
-	print(packages_info_cache)
+
+	# simple cases where only single package is returned
+	cases = [
+		('Leaf1', None, '1.1.0'),
+		('Leaf2', None, '3.0.5'),
+		('Leaf1', '(,1.1.0)', '1.0.1'),
+		('Leaf1', '[1.0.0,1.1.0)', '1.0.1'),
+		('Leaf1', '[1.0]', '1.0.1'),
+		('Leaf2', '(2.0 , 3.0)', '2.1.0'),
+		('Leaf2', '(, 3.0)', '2.1.0'),
+		('Leaf2', '(, 3.0]', '3.0.5'),
+		('Leaf2', '(, 2.5]', '2.1.0'),
+	]
+
+	for name, req, ver in cases:
+		deps = find_dependencies([(name, req)])
+
+		assert len(deps.items()) == 1
+		assert deps[name].to_str() == ver
+
 	print(find_dependencies([('Leaf1', None)]))
 
 
@@ -359,5 +364,5 @@ if __name__ == '__main__':
 	print('--- testing start ---')
 	test_version_range_parsing()
 	test_version_in_range()
-	# test_dependency_resolution()
+	test_dependency_resolution()
 	print('--- testing done ---')
