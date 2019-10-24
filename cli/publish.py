@@ -10,7 +10,8 @@ def generate_md5_hash_for_all_files(file_paths):
 			file_to_md5[file] = hashlib.md5(f.read()).hexdigest()
 	with open('files_md5.txt', 'w') as f:
 		for k, v in file_to_md5.items():
-			f.write(str(k)+' --> '+(v)+'\n')
+			path = os.path.abspath(k)
+			f.write(v+' '+path+'\n')
 
 	file_paths.append('files_md5.txt')
 
