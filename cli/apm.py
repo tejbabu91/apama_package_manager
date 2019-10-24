@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, os, pathlib, argparse
+import sys, os, argparse
 
 apm_script_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 if apm_script_dir not in sys.path: sys.path.append(apm_script_dir)
