@@ -300,7 +300,6 @@ def test_version_range_parsing():
         ('[5.0,5.0)', None),
         ('(5.0,5.0)', None),
 	]:
-		result = ''
 		try:
 			v = VersionRange.from_str(s)
 			result = str(v)
@@ -345,7 +344,12 @@ def test_dependency_resolution():
 		Package(name='Leaf2', description='', version='2.1.0'),
 		Package(name='Leaf2', description='', version='3.0.5'),
 
-		Package(name='Simple', description='', version='2.0.0')
+		# basic - single leaf dependency
+		Package(name='Simple1', description='', version='1.0.0', dependencies=[Dep('Leaf1', '[1.0]')]), # fixed dependency
+		Package(name='Simple1', description='', version='2.0.0', dependencies=[Dep('Leaf1', '1.1')]),   # min dependency
+
+		Package(name='Simple2', description='', version='1.1.0', dependencies=[Dep('Leaf2', '[,2.0)')]),    #  any thing below 2
+		Package(name='Simple2', description='', version='2.0.5', dependencies=[Dep('Leaf2', '[2.0,3.0)')]), # only major version 2
 	]
 
 	for p in packages:
@@ -388,6 +392,16 @@ def test_dependency_resolution():
 			pass # expected
 		except Exception as ex:
 			pass # expected
+
+	# cases with multiple dependencies
+	cases = [
+		('Simple1', '[1.0]', {'Simple1': Version.from_str('1.0.0'), 'Leaf1': Version.from_str('1.0.1')}),
+		('Simple1', '[1.0]', {'Simple1': Version.from_str('1.0.0'), 'Leaf1': Version.from_str('1.0.1')}),
+	]
+	for (name, req, result) in cases:
+		deps = find_dependencies([(name, req)])
+
+		assert deps == result
 
 
 if __name__ == '__main__':
