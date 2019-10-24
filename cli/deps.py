@@ -10,7 +10,7 @@ class BoundaryType(Enum):
 	INCLUSIVE = 1
 	EXCLUSIVE = 2
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class Boundary(object):
 	major: int
 	minor: int
@@ -154,8 +154,15 @@ class VersionRange(object):
 			res = f'{res}{self.end.major}.{self.end.minor}{"]" if self.end.is_inclusive() else ")"}'
 		else:
 			res = f'{res})'
-
 		return res
+
+	def __post_init__(self):
+		if self.start and self.end:
+			# make sure end >= start
+			if (self.start > self.end) or \
+					(self.start.major == self.end.major and self.start.minor == self.end.minor and
+					    (self.start.is_exclusive() or self.end.is_exclusive())):
+				raise Exception(f'Invalid range {str(self)}, it will never be satisfied')
 
 
 # cache of package information
@@ -288,6 +295,10 @@ def test_version_range_parsing():
         ('(1.0', None),
         ('[1.0)', None),
         ('[1.0,2.3,4.5]', None),
+        ('[5.0,4.0]', None),    # will never be satisfied
+        ('(5.0,5.0]', None),    # will never be satisfied
+        ('[5.0,5.0)', None),
+        ('(5.0,5.0)', None),
 	]:
 		result = ''
 		try:
@@ -357,7 +368,22 @@ def test_dependency_resolution():
 		assert len(deps.items()) == 1
 		assert deps[name].to_str() == ver
 
-	print(find_dependencies([('Leaf1', None)]))
+	# simple un-satisfied dependency
+	cases = [
+		('Leaf1', '[1.2,)'),
+		('Leaf1', '[,1.0)'),
+		('Leaf2', '(2.1,3.0)'),
+		('Leaf2', '[4.0,2.0]'),
+	]
+
+	for name, req in cases:
+		try:
+			_ = find_dependencies([(name, req)])
+			assert False    # should have failed
+		except Conflict as ex:
+			pass # expected
+		except Exception as ex:
+			pass # expected
 
 
 if __name__ == '__main__':
