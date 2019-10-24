@@ -1,18 +1,13 @@
 {
-  "package": {
 	"name": "",
 	"description": "",
 	"version": "",
 	"tags": [],
 	"dependencies": [
 		{
-			"name": "lala",
-			"version": "*.*.*"
+			"name": "<dependent_package_name>",
+			"version": "<dependent_package_version>"
 		}
 	],
-		
-	"monitors": [],
-	"events": [],
-	"connectivityPlugins": [],
-  },
+	"deployExcludes": [],
 }
