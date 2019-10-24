@@ -4,8 +4,7 @@ from dataclasses import dataclass, field
 from typing import *
 import zipfile
 import shutil
-
-from cli import model
+import model
 
 
 @dataclass_json
