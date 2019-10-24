@@ -19,7 +19,7 @@ def main():
 	        Command('show', 'Show information about one or more installed packages', True, None, show.run),
 	        Command('install', 'Install given package', True, install.add_arguments, install.run),
 	        Command('uninstall', 'Uninstall given packages', True, uninstall.add_arguments, uninstall.run),
-			Command('publish', 'Publish this package to repository', True, None, publish.run),
+			Command('publish', 'Publish this package to repository', True, publish.add_arguments, publish.run),
 			Command('deploy', 'Deploy the application', True, deploy.add_arguments, deploy.run)
 	       ]
 	mainparser = argparse.ArgumentParser(description='Apama Package Manager Command Line Tool')
