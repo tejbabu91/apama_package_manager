@@ -1,6 +1,5 @@
 from typing import *
 from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json
 import re
 
 @dataclass(order=True, frozen=True)
@@ -23,6 +22,9 @@ class Version(object):
 
 		return Version(int(nums[0]), int(nums[1]), int(nums[2]))
 
+	def __repr__(self):
+		return self.to_str()
+
 	def to_str(self) -> str:
 		return f'{self.major}.{self.minor}.{self.patch}'
 
@@ -30,6 +32,10 @@ class Version(object):
 class Dep(object):
 	name: str           # name of the dependent package
 	version: str        # version requirement of the dependent packages to use. Can use wildcard.
+
+	@staticmethod
+	def from_dict(d: Dict[str, Any]):
+		return Dep(**d)
 
 @dataclass(frozen=True)
 class Package(object):
@@ -44,3 +50,11 @@ class Package(object):
 
 	def __post_init__(self):
 		Version.from_str(self.version) # just for validation
+
+
+	@staticmethod
+	def from_dict(dict: Dict[str, Any]):
+		if 'dependencies' in dict:
+			deps = dict['dependencies']
+			dict['dependencies'] = [Dep.from_dict(i) for i in deps]
+		return Package(**dict)

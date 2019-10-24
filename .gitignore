@@ -1,3 +1,4 @@
 .idea
 __pycache__
 package_server_ven
+package_server/pyvenv
