@@ -30,9 +30,9 @@ def get_all_packages():
 
     return result
 
-def get_all_packages_with_name(name):
+def get_all_packages_with_name(name: str) -> List[Package]:
     if name in packages_info_cache:
-        versions = packages_info_cache[name].values()
+        versions = list(packages_info_cache[name].values())
         return sort_pkg_by_versions(versions)
 
     req = urllib.request.Request(url=PACKAGES_PATH + '/' + name, method='GET')
@@ -54,8 +54,28 @@ def get_all_packages_with_name(name):
     return result
 
 def get_all_package_versions(name: str) -> List[Version]:
-    pkgs = get_all_packages_with_name(name)
-    return [Version.from_str(p.version) for p in pkgs]
+    return [Version.from_str(p.version) for p in get_all_packages_with_name(name)]
+
+def get_latest_package(name: str) -> Package:
+    return get_all_packages_with_name(name)[-1]
+
+def get_pkg_info(name: str, version: Optional[Union[str, Version]] = None) -> Package:
+    if not version:
+        return get_latest_package(name)
+
+    if isinstance(version, str):
+        version = Version.from_str(version)
+    if name not in packages_info_cache:
+        get_all_packages_with_name(name)
+
+    if name not in packages_info_cache:
+        raise Exception(f'Package {name} not found')
+
+    versions = packages_info_cache[name]
+    if version not in versions:
+        raise Exception(f'Package {name} with version {version} not found. Found versions: {",".join([str(v) for v in versions.keys()])}')
+
+    return versions[version]
 
 def download_packages_with_name_and_version(name, version, targetPath):
     urllib.request.urlretrieve(PACKAGES_PATH + '/' + name + '/' + version, filename=targetPath)

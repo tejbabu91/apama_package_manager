@@ -4,7 +4,7 @@ from model import *
 from dataclasses import dataclass
 import re, collections
 from enum import Enum
-
+import helper
 
 class BoundaryType(Enum):
 	INCLUSIVE = 1
@@ -165,34 +165,6 @@ class VersionRange(object):
 				raise Exception(f'Invalid range {str(self)}, it will never be satisfied')
 
 
-# cache of package information
-packages_info_cache: Dict[str, Dict[Version, Package]] = {}
-
-
-def get_pkg_versions(name: str) -> List[Version]:
-	if name in packages_info_cache:
-		versions = packages_info_cache[name]
-		return list(versions.keys())
-
-	# TODO: else make HTTP call to the backend and cache the information
-	return []
-
-def get_latest_version(name: str) -> Version:
-	return sorted(get_pkg_versions(name))[-1]
-
-
-def get_pkg_info(name: str, version: Optional[str] = None) -> Package:
-	if not version:
-		version = get_latest_version(name)
-	version = Version.from_str(version)
-	if name in packages_info_cache:
-		if version in packages_info_cache[name]:
-			return packages_info_cache[name][version]
-
-	# TODO: make HTTP call to the backend and cache the information
-	return None
-
-
 def find_dependencies_latest_version(name: str) -> Dict[str, Version]:
 	"""
 	Find all dependencies of the provided package - just return the latest version of all dependencies
@@ -201,14 +173,14 @@ def find_dependencies_latest_version(name: str) -> Dict[str, Version]:
 	"""
 	visited = {}
 	queue = collections.deque[name]
-	visited[name] = get_latest_version(name)
+	visited[name] = Version.from_str(helper.get_latest_package(name).version)
 
 	while queue:
 		pkg_name = queue.popleft()
-		pkg_info = get_pkg_info(pkg_name)   # latest for now
+		pkg_info = helper.get_pkg_info(pkg_name)   # latest for now
 		for dep in pkg_info.dependencies:
 			if dep.name not in visited:
-				visited[dep.name] = get_latest_version(dep.name)
+				visited[dep.name] = Version.from_str(helper.get_latest_package(dep.name).version)
 				queue.append(dep.name)
 	return visited
 
@@ -237,7 +209,7 @@ def find_dependencies(packages: List[Tuple[str, Optional[str]]]) -> Dict[str, Ve
 		pkg_name = current_requirement.name
 
 		# get selected version if already selected previously else get all available versions and try each
-		available_versions =  [selected_versions[pkg_name]] if pkg_name in selected_versions else get_pkg_versions(pkg_name)
+		available_versions =  [selected_versions[pkg_name]] if pkg_name in selected_versions else helper.get_all_package_versions(pkg_name)
 
 		# filter only compatible versions
 		compatible_versions = sorted([v for v in available_versions if current_requirement.version_req.isInRange(v)])
@@ -247,7 +219,7 @@ def find_dependencies(packages: List[Tuple[str, Optional[str]]]) -> Dict[str, Ve
 				selected_versions = selected_versions.copy()
 				open_requirements = open_requirements.copy()
 
-				pkg_info = get_pkg_info(pkg_name, ver.to_str())
+				pkg_info = helper.get_pkg_info(pkg_name, ver)
 				selected_versions[pkg_name] = ver
 
 				# add all dependencies of the selected package as open requirements
@@ -353,7 +325,7 @@ def test_dependency_resolution():
 	]
 
 	for p in packages:
-		versions = packages_info_cache.setdefault(p.name, {})
+		versions = helper.packages_info_cache.setdefault(p.name, {})
 		versions[Version.from_str(p.version)] = p
 
 	# simple cases where only single package is returned

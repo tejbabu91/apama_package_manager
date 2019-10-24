@@ -31,7 +31,7 @@ class Version(object):
 @dataclass(frozen=True)
 class Dep(object):
 	name: str           # name of the dependent package
-	version: str        # version requirement of the dependent packages to use. Can use wildcard.
+	version: str        # version requirement of the dependent packages to use. Use microsoft nuget syntax - https://docs.microsoft.com/en-us/nuget/concepts/package-versioning#version-ranges-and-wildcards
 
 	@staticmethod
 	def from_dict(d: Dict[str, Any]):
