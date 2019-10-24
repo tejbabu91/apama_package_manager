@@ -2,6 +2,9 @@
 
 import sys, os, pathlib, argparse
 
+apm_script_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+if apm_script_dir not in sys.path: sys.path.append(apm_script_dir)
+
 import create, deploy, install, uninstall, show, list_packages, publish
 
 class Command(object):
