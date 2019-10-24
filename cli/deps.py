@@ -173,14 +173,14 @@ def find_dependencies_latest_version(name: str) -> Dict[str, Version]:
 	"""
 	visited = {}
 	queue = collections.deque[name]
-	visited[name] = Version.from_str(helper.get_latest_package(name).version)
+	visited[name] = helper.get_latest_package(name).version
 
 	while queue:
 		pkg_name = queue.popleft()
 		pkg_info = helper.get_pkg_info(pkg_name)   # latest for now
 		for dep in pkg_info.dependencies:
 			if dep.name not in visited:
-				visited[dep.name] = Version.from_str(helper.get_latest_package(dep.name).version)
+				visited[dep.name] = helper.get_latest_package(dep.name).version
 				queue.append(dep.name)
 	return visited
 
@@ -307,26 +307,26 @@ def test_version_in_range():
 def test_dependency_resolution():
 	# add some packages for testing
 	packages = [
-		Package(name='Leaf1', description='', version='1.0.0'),
-		Package(name='Leaf1', description='', version='1.0.1'),
-		Package(name='Leaf1', description='', version='1.1.0'),
-
-		Package(name='Leaf2', description='', version='1.0.0'),
-		Package(name='Leaf2', description='', version='2.0.0'),
-		Package(name='Leaf2', description='', version='2.1.0'),
-		Package(name='Leaf2', description='', version='3.0.5'),
+		{'name':'Leaf1', 'description':'', 'version':'1.0.0'},
+		{'name':'Leaf1', 'description':'', 'version':'1.0.1'},
+		{'name':'Leaf1', 'description':'', 'version':'1.1.0'},
+		{'name':'Leaf2', 'description':'', 'version':'1.0.0'},
+		{'name':'Leaf2', 'description':'', 'version':'2.0.0'},
+		{'name':'Leaf2', 'description':'', 'version':'2.1.0'},
+		{'name':'Leaf2', 'description':'', 'version':'3.0.5'},
 
 		# basic - single leaf dependency
-		Package(name='Simple1', description='', version='1.0.0', dependencies=[Dep('Leaf1', '[1.0]')]), # fixed dependency
-		Package(name='Simple1', description='', version='2.0.0', dependencies=[Dep('Leaf1', '1.1')]),   # min dependency
+		{'name':'Simple1', 'description':'', 'version':'1.0.0', 'dependencies':[Dep('Leaf1', '[1.0]')]}, # fixed dependency
+		{'name':'Simple1', 'description':'', 'version':'2.0.0', 'dependencies':[Dep('Leaf1', '1.1')]},   # min dependency
 
-		Package(name='Simple2', description='', version='1.1.0', dependencies=[Dep('Leaf2', '[,2.0)')]),    #  any thing below 2
-		Package(name='Simple2', description='', version='2.0.5', dependencies=[Dep('Leaf2', '[2.0,3.0)')]), # only major version 2
+		{'name':'Simple2', 'description':'', 'version':'1.1.0', 'dependencies':[Dep('Leaf2', '[,2.0)')]},    #  any thing below 2
+		{'name':'Simple2', 'description':'', 'version':'2.0.5', 'dependencies':[Dep('Leaf2', '[2.0,3.0)')]}, # only major version 2
 	]
 
 	for p in packages:
+		p = Package.from_dict(p)
 		versions = helper.packages_info_cache.setdefault(p.name, {})
-		versions[Version.from_str(p.version)] = p
+		versions[p.version] = p
 
 	# simple cases where only single package is returned
 	cases = [

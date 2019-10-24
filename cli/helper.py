@@ -12,7 +12,7 @@ PACKAGES_PATH = SERVER_URL + 'packages'
 packages_info_cache: Dict[str, Dict[Version, Package]] = {}
 
 def sort_pkg_by_versions(packages: List[Package]) -> List[Package]:
-    return sorted(packages, key=lambda x: Version.from_str(x.version))
+    return sorted(packages, key=lambda x: x.version)
 
 def get_all_packages():
     req = urllib.request.Request(url=PACKAGES_PATH, method='GET')
@@ -49,12 +49,12 @@ def get_all_packages_with_name(name: str) -> List[Package]:
 
     d = {}
     for p in result:
-        d[Version.from_str(p.version)] = p
+        d[p.version] = p
     packages_info_cache[name] = d
     return result
 
 def get_all_package_versions(name: str) -> List[Version]:
-    return [Version.from_str(p.version) for p in get_all_packages_with_name(name)]
+    return [p.version for p in get_all_packages_with_name(name)]
 
 def get_latest_package(name: str) -> Package:
     return get_all_packages_with_name(name)[-1]
@@ -91,4 +91,4 @@ def upload_package(filePath):
         raise Exception(f'Received code : {resp.status}, reason : {resp.reason}, body : {resp.read().decode("utf-8")}')
 
 if __name__ == '__main__':
-    print(get_all_packages_with_name('empty_package'))
+    print(get_latest_package('empty_package'))

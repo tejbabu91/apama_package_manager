@@ -39,9 +39,9 @@ class Dep(object):
 
 @dataclass(frozen=True)
 class Package(object):
-	name: str           # unique name of the package
-	description: str    # description of the package
-	version: str        # version of the package
+	name: str               # unique name of the package
+	description: str        # description of the package
+	version: Version        # version of the package
 	tags: List[str]                 = field(default_factory=lambda : [])
 	dependencies: List[Dep]         = field(default_factory=lambda : [])
 	monitors: List[str]             = field(default_factory=lambda : [])
@@ -49,12 +49,19 @@ class Package(object):
 	connectivityPlugins: List[str]  = field(default_factory=lambda : [])
 
 	def __post_init__(self):
-		Version.from_str(self.version) # just for validation
+		if isinstance(self.version, str):
+			raise Exception('Pass Version object instead of version string')
 
 
 	@staticmethod
 	def from_dict(dict: Dict[str, Any]):
 		if 'dependencies' in dict:
 			deps = dict['dependencies']
-			dict['dependencies'] = [Dep.from_dict(i) for i in deps]
+			for i,d in enumerate(deps):
+				if not isinstance(d, Dep):
+					deps[i] = Dep.from_dict(d)
+			dict['dependencies'] = deps
+		if 'version' in dict:
+			if isinstance(dict['version'], str):
+				dict['version'] = Version.from_str(dict['version'])
 		return Package(**dict)
