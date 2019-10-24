@@ -2,6 +2,7 @@ import urllib.request
 import os
 import json
 from model import *
+
 SERVER_URL = os.environ.get('SERVER_URL', 'http://localhost:5000')
 
 if not SERVER_URL.endswith('/'): SERVER_URL = SERVER_URL + '/'
@@ -24,7 +25,7 @@ def get_all_packages():
 
     # cache the result for later package specific calls
     for p in result:
-        versions = packages_info_cache.setdefault(p.name)
+        versions = packages_info_cache.setdefault(p.name, dict())
         versions[Version.from_str(p.version)] = p
 
     return result

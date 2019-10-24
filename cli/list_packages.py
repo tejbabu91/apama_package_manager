@@ -7,7 +7,7 @@ def run(args=None):
 	print('')
 	print('showing list of packages:')
 	print('')
-	for p in sorted(list(set([x['name'] for x in get_all_packages()]))):
+	for p in sorted(list(set([x.name for x in get_all_packages()]))):
 		print(f'\t{p}')
 	print('')
 
