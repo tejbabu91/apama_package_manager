@@ -7,6 +7,10 @@
       {
         "name" : "simple_service",
         "version": "1.0.0"
+      },
+      {
+        "name" : "simple_request_response",
+        "version": "1.0.0"
       }
     ]
   }

@@ -26,7 +26,7 @@ def packages_post():
             tmpfd.close()
 
         app.manager.add_package(tmpfilepath)
-        return Response(status=200)
+        return Response(status=201)
     finally:
         if os.path.exists(tmpfilepath):
             os.remove(tmpfilepath)

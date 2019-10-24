@@ -1,12 +1,14 @@
-#! /usr/bin/env python
-import sys, os, getopt, pathlib, urllib.request, json, argparse
-import list, show, install, uninstall, publish, deploy
+#! /usr/bin/env python3
+
+import sys, os, pathlib, urllib.request, json, argparse
+
+import create, list_packages, show, install, uninstall, publish, deploy
 
 # add common python scripts to the path
 sys.path.append(os.fspath(pathlib.Path(__file__).parent.parent.joinpath('common')))
 
 class Command(object):
-	def __init__(self, name, help, required=True,  args_provider=None, runner=None):
+	def __init__(self, name, help, required=True, args_provider=None, runner=None):
 		self.name = name
 		self.help = help
 		self.required = required
@@ -15,8 +17,9 @@ class Command(object):
 
 def main():
 	commands = [
-			Command('list', 'List all the packages', True, None, list.run),
-	        Command('show', 'Show information about one or more installed packages', True, None, show.run),
+	        Command('init', 'Create a new package', True, create.add_arguments, create.run),
+	        Command('list', 'List all the packages', True, None, list_packages.run),
+	        Command('show', 'Show information about one or more installed packages', True, show.add_arguments, show.run),
 	        Command('install', 'Install given package', True, install.add_arguments, install.run),
 	        Command('uninstall', 'Uninstall given packages', True, uninstall.add_arguments, uninstall.run),
 			Command('publish', 'Publish this package to repository', True, publish.add_arguments, publish.run),
