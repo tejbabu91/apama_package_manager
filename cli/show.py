@@ -1,18 +1,21 @@
-import urllib.request, json
-
+from helper import get_all_packages
 
 def run(args=None):
 	"""
 	list of packages
 	"""
-	print ("")
-	print ("showing list of packages:")
-	print ("")
-	contents = urllib.request.urlopen("http://127.0.0.1:5000/packages")
-	encoding = contents.info().get_content_charset('utf-8')
-	manifests = json.loads(contents.read().decode(encoding))
-	manifest_list = manifests["packages"]
-	for elem in manifest_list:
-		print(elem["name"])
-		print(elem["description"])
-		print(elem["version"])
+	packages_to_display = args.show
+	metadata = dict()
+	for package in get_all_packages():
+		if package['name'] in packages_to_display:
+			if package['name'] not in metadata: metadata[package['name']] = list()
+			metadata[package['name']].append(package)
+
+	for (i, n) in enumerate(packages_to_display):
+		if n not in metadata:
+			print(f'Package {n} not found!!!\n')
+
+def add_arguments(parser):
+	"""
+	"""
+	parser.add_argument(dest="show", nargs="+")

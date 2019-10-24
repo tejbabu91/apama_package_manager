@@ -1,6 +1,6 @@
 # dependencies management of Apama packages
 
-from common.model import *
+from model import *
 from dataclasses import dataclass
 import re, collections
 from enum import Enum

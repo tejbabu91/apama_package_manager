@@ -24,7 +24,8 @@ def run(args=None):
 	resp = conn.getresponse()
 	if resp.status == 200:
 		print('package published successfully')
+
 def add_arguments(parser):
 	"""
 	"""
-	parser.add_argument(dest="package")
+	parser.add_argument(dest="publish")

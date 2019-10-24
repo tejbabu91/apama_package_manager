@@ -5,7 +5,8 @@ from typing import *
 import zipfile
 import shutil
 
-from common import model
+from cli import model
+
 
 @dataclass_json
 @dataclass(order=True)

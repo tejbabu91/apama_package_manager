@@ -1,11 +1,8 @@
 #! /usr/bin/env python3
 
-import sys, os, pathlib, urllib.request, json, argparse
+import sys, os, pathlib, argparse
 
-import create, list_packages, show, install, uninstall, publish, deploy
-
-# add common python scripts to the path
-sys.path.append(os.fspath(pathlib.Path(__file__).parent.parent.joinpath('common')))
+import create, deploy, install, uninstall, show, list_packages, publish
 
 class Command(object):
 	def __init__(self, name, help, required=True, args_provider=None, runner=None):
@@ -42,4 +39,3 @@ def main():
 
 if __name__=="__main__":
 	main()
-	

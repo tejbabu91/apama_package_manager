@@ -1,4 +1,4 @@
-from cli.helper import get_all_packages
+from helper import get_all_packages
 
 def run(args=None):
 	"""
