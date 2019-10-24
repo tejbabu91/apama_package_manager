@@ -38,6 +38,9 @@ def run(args=None):
 
 	upload_package(name)
 
+	os.remove('checksums.txt')
+	os.remove(name)
+
 if __name__ == "__main__":
 	#get_all_files()
 	print(get_all_files())
