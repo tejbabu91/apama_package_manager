@@ -204,8 +204,11 @@ def find_dependencies(packages: List[Tuple[str, Optional[str]]]) -> Dict[str, Ve
 			return selected_versions
 
 		## Pick one of the requirement for processing but don't update existing map for easier back tracking
-		open_requirements = open_requirements.copy()  # create copy
-		current_requirement = open_requirements.pop()
+		l = sorted(list(open_requirements), key=lambda x: x.name)
+
+
+		current_requirement = l[0]
+		open_requirements = set(l[1:])  # create copy
 		pkg_name = current_requirement.name
 
 		# get selected version if already selected previously else get all available versions and try each
@@ -216,17 +219,16 @@ def find_dependencies(packages: List[Tuple[str, Optional[str]]]) -> Dict[str, Ve
 		compatible_versions.reverse()
 		for ver in compatible_versions:
 			try:
-				selected_versions = selected_versions.copy()
-				open_requirements = open_requirements.copy()
+				child_selected = selected_versions.copy()
+				child_open = open_requirements.copy()
 
 				pkg_info = helper.get_pkg_info(pkg_name, ver)
-				selected_versions[pkg_name] = ver
+				child_selected[pkg_name] = ver
 
 				# add all dependencies of the selected package as open requirements
 				for dep in pkg_info.dependencies:
-					open_requirements.add(PackageRequirement(dep.name, VersionRange.from_str(dep.version)))
-				#
-				return rec_step(selected_versions, open_requirements)
+					child_open.add(PackageRequirement(dep.name, VersionRange.from_str(dep.version)))
+				return rec_step(child_selected, child_open)
 			except Conflict as ex:
 				pass    # try next version
 
