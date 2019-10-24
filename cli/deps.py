@@ -334,20 +334,23 @@ def test_version_in_range():
 
 
 def test_dependency_resolution():
-	packages = {
-		'Leaf1': {
-			Version.from_str('1.0.0'): Package(name='Leaf1', description='', version='1.0.0'),
-			Version.from_str('1.0.1'): Package(name='Leaf1', description='', version='1.0.1'),
-			Version.from_str('1.1.0'): Package(name='Leaf1', description='', version='1.1.0'),
-		},
-		'Leaf2': {
-			Version.from_str('1.0.0'): Package(name='Leaf2', description='', version='1.0.0'),
-			Version.from_str('2.0.0'): Package(name='Leaf2', description='', version='2.0.0'),
-			Version.from_str('2.1.0'): Package(name='Leaf2', description='', version='2.1.0'),
-			Version.from_str('3.0.5'): Package(name='Leaf2', description='', version='3.0.5'),
-		}
-	}
-	packages_info_cache.update(packages)
+	# add some packages for testing
+	packages = [
+		Package(name='Leaf1', description='', version='1.0.0'),
+		Package(name='Leaf1', description='', version='1.0.1'),
+		Package(name='Leaf1', description='', version='1.1.0'),
+
+		Package(name='Leaf2', description='', version='1.0.0'),
+		Package(name='Leaf2', description='', version='2.0.0'),
+		Package(name='Leaf2', description='', version='2.1.0'),
+		Package(name='Leaf2', description='', version='3.0.5'),
+
+		Package(name='Simple', description='', version='2.0.0')
+	]
+
+	for p in packages:
+		versions = packages_info_cache.setdefault(p.name, {})
+		versions[Version.from_str(p.version)] = p
 
 	# simple cases where only single package is returned
 	cases = [
@@ -374,6 +377,7 @@ def test_dependency_resolution():
 		('Leaf1', '[,1.0)'),
 		('Leaf2', '(2.1,3.0)'),
 		('Leaf2', '[4.0,2.0]'),
+		('Leaf2', '[,0.0]'),
 	]
 
 	for name, req in cases:
