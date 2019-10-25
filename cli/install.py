@@ -18,13 +18,29 @@ def run(args=None):
         if version is not None: version = f'{version}'
         pkgs_requested.append((name, version))
 
+    packages_in_manifest = dict()
     with open('apama_packages.json', 'r') as json_file:
         packageData = json.load(json_file)
-        pkgs_requested.extend([(x['name'], x['version']) for x in packageData['dependencies']])
+        for x in packageData['dependencies']:
+            packages_in_manifest[x['name']] = x['version']
+
+    pkgs_requested.extend(packages_in_manifest.items())
+
+    # packages which are explicitly requested by user, either via cmd line of manifest
+    explicit_packages = list(set([k for (k,v) in pkgs_requested]))
 
     packages_to_install = find_dependencies(pkgs_requested)
 
-    packageData['dependencies'] = [{'name': k, 'version': v.to_str()} for (k, v) in packages_to_install.items()]
+    for (k,v) in packages_to_install.items():
+        # get list of packages requested by user, but filter out those that are already present in manifest
+        if k in explicit_packages and k not in packages_in_manifest:
+            version = v.to_str()
+            for (x,y) in pkgs_requested:
+                if x == k:
+                    if y is not None:
+                        version = y
+                    break
+            packageData['dependencies'].append({'name': k, 'version': version})
 
     with open('apama_packages.json', 'w') as json_file:
         json.dump(packageData, json_file, indent=2)
@@ -61,6 +77,7 @@ def runInstall(packages_to_install):
                 # Different version of the package is installed, so delete the existing one and perform the upgrade/downgrade
                 if os.path.exists(os.path.join('apama_packages', n)):
                     shutil.rmtree(os.path.join('apama_packages', n))
+
         # Download the package
         tmpFile = os.path.join('apama_packages', n + '.zip')
         download_packages_with_name_and_version(n, v.to_str(), tmpFile)
