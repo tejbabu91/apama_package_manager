@@ -51,7 +51,7 @@ def run(args=None):
 def add_arguments(parser):
     """
     """
-    parser.add_argument(dest="install", nargs="*")
+    parser.add_argument(dest="install", nargs="*", help='Provide list of packages to be installed')
 
 
 def runInstall(packages_to_install):

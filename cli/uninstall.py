@@ -37,4 +37,4 @@ def run(args=None):
 def add_arguments(parser):
     """
     """
-    parser.add_argument(dest="uninstall", nargs="*")
+    parser.add_argument(dest="uninstall", nargs="*", help='Provide list of packages to be uninstalled')

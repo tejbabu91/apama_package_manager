@@ -23,4 +23,4 @@ def run(args=None):
 def add_arguments(parser):
 	"""
 	"""
-	parser.add_argument(dest="projectName")
+	parser.add_argument(dest="projectName", help='Create a new project')

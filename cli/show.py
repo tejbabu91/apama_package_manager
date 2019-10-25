@@ -27,4 +27,4 @@ def run(args=None):
 def add_arguments(parser):
 	"""
 	"""
-	parser.add_argument(dest="show", nargs="+")
+	parser.add_argument(dest="show", nargs="+", help='Display package information')

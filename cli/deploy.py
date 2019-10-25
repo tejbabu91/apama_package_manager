@@ -19,4 +19,4 @@ def run(args=None):
 def add_arguments(parser):
 	"""
 	"""
-	parser.add_argument(dest="deployDir")
+	parser.add_argument(dest="deployDir", help='Provide the path to the directory where correlator deployment will be created')
