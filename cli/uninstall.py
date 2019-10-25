@@ -16,7 +16,7 @@ def run(args=None):
             if name in args.uninstall:
                 idx_to_delete.append(i)
             else:
-                existingPackages[name] = k[version]
+                existingPackages[name] = version
 
     if len(idx_to_delete) > 0:
         for i in reversed(idx_to_delete):
