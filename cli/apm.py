@@ -19,13 +19,13 @@ def main():
 	commands = [
 	        Command('init', 'Create a new package', True, create.add_arguments, create.run),
 	        Command('list', 'List all the packages', True, None, list_packages.run),
-	        Command('show', 'Show information about one or more installed packages', True, show.add_arguments, show.run),
+	        Command('show', 'Show information about one or more packages', True, show.add_arguments, show.run),
 	        Command('install', 'Install given package', True, install.add_arguments, install.run),
 	        Command('uninstall', 'Uninstall given packages', True, uninstall.add_arguments, uninstall.run),
 			Command('publish', 'Publish this package to repository', True, None, publish.run),
 			Command('deploy', 'Deploy the application', True, deploy.add_arguments, deploy.run)
 	       ]
-	mainparser = argparse.ArgumentParser(description='Apama Package Manager Command Line Tool')
+	mainparser = argparse.ArgumentParser(description='Apama Package Manager')
 	cmd_parser = mainparser.add_subparsers(title='commands', dest='command')
 	cmd_parser.required = True
 	
